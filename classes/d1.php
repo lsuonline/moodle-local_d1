@@ -236,18 +236,24 @@ class lsud1 {
     }
 
     public static function get_cs_objectid($coursenumber, $sectionnumber) {
+        // Set the optional parameters to search for the section.
         $optionalparms = ', "advancedCriteria": {"sectionCode": "' . $sectionnumber . '"}';
 
+        // Return the list of courses that match the course number and section number.
         $courses = self::get_course_by('250','courseCode', $coursenumber, $optionalparms, 'Short');
 
+        // Loop through the courses and find the one that matches EXACTLY.
         foreach ($courses->courseSectionProfiles->courseSectionProfile as $course) {
 
-            if ($course->associatedCourse->courseNumber <> 'EXT ' . $coursenumber) {
+            // Find the exact course number match.
+            if ($course->associatedCourse->courseNumber == $coursenumber) {
 
+                // Set the course section object id.
                 $csobjectid = $course->objectId;
             }
         }
 
+        // Return the course section object id.
         return $csobjectid;
     }
 
