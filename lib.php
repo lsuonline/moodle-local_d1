@@ -111,7 +111,7 @@ class d1 {
                 if (isset($post->createOrUpdateStudentFinalGradeResult)) {
                     mtrace("    Posted \"$odlgrade->finallettergrade\" for $odlgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
                 } else {
-                    mtrace("    Unable to post \"$odlgrade->finallettergrade\" for $odlgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message . ".");
+                    mtrace("    Unable to post \"$odlgrade->finallettergrade\" for $odlgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
                 }
 
                 // Log that we're done with this student's posting.
@@ -176,7 +176,7 @@ class d1 {
                 if (isset($post->createOrUpdateStudentFinalGradeResult)) {
                     mtrace("    Posted \"$pdgrade->finallettergrade\" for $pdgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
                 } else {
-                    mtrace("    Unable to post \"$pdgrade->finallettergrade\" for $pdgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message . ".");
+                    mtrace("    Unable to post \"$pdgrade->finallettergrade\" for $pdgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
                 }
 
                 // Log that we're done with this student's posting.
