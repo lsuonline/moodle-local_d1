@@ -131,6 +131,10 @@ class d1 {
      * @return boolean
      */
     public function run_post_pd() {
+        require_once('classes/d1.php');
+
+        // Get a token.
+        $token = lsud1::get_token();
 
         // Get the list of courses to be posted.
         $pdcourses = lsud1::get_pd_dgps(true);
