@@ -1189,7 +1189,7 @@ class lsud1 {
     /**
      * Gets the daily grade postings array.
      *
-     * @return @array of @objects $pd_dgps
+     * @return @array of @objects $odl_dgps
      */
     public static function get_odl_dgps($unique, $courseidnumber=null) {
         global $DB;
@@ -1221,7 +1221,7 @@ class lsud1 {
                     (SELECT DISTINCT(letter) FROM mdl_grade_letters WHERE contextid = 1 AND lowerboundary = (SELECT(MAX(gl1.lowerboundary)) FROM mdl_grade_letters gl1 WHERE 1 = gl1.contextid AND gg.finalgrade / gg.rawgrademax * 100 >= gl1.lowerboundary)),
                     (SELECT DISTINCT(letter) FROM mdl_grade_letters WHERE contextid = ctx.id AND lowerboundary = (SELECT(MAX(gl1.lowerboundary)) FROM mdl_grade_letters gl1 WHERE ctx.id = gl1.contextid AND gg.finalgrade / gg.rawgrademax * 100 >= gl1.lowerboundary))
                   ) AS FinalLetterGrade,
-                  DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(sub.timemodified), @@GLOBAL.time_zone, "America/Chicago"), "%m/%d/%Y") AS FinalDate
+                  DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(sub.timemodified), @@GLOBAL.time_zone, "America/Chicago"), "%d %b %Y") AS FinalDate
                 FROM mdl_course c
                   INNER JOIN mdl_course_categories ccx ON ccx.id = c.category
                   INNER JOIN mdl_enrol e ON e.courseid = c.id AND e.enrol = "d1"
@@ -1255,9 +1255,7 @@ class lsud1 {
                     SELECT DISTINCT(cc.id) AS "CC_ID"
                     FROM mdl_course_categories cc
                   WHERE cc.name IN ("Archived")
-                  )
-
-                GROUP BY coursenumber, sectionnumber, x_number, FinalLetterGrade
+                  )' . $wheres . $grouper . '
 
                 UNION
 
@@ -1270,7 +1268,7 @@ class lsud1 {
                     (SELECT DISTINCT(letter) FROM mdl_grade_letters WHERE contextid = 1 AND lowerboundary = (SELECT(MAX(gl1.lowerboundary)) FROM mdl_grade_letters gl1 WHERE 1 = gl1.contextid AND gg2.finalgrade / gg2.rawgrademax * 100 >= gl1.lowerboundary)),
                     (SELECT DISTINCT(letter) FROM mdl_grade_letters WHERE contextid = ctx.id AND lowerboundary = (SELECT(MAX(gl1.lowerboundary)) FROM mdl_grade_letters gl1 WHERE ctx.id = gl1.contextid AND gg2.finalgrade / gg2.rawgrademax * 100 >= gl1.lowerboundary))
                   ) AS FinalLetterGrade,
-                  DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(IF(qa.timefinish IS NULL, gg.timemodified, qa.timefinish)), @@GLOBAL.time_zone, "America/Chicago"), "%m/%d/%Y") AS FinalDate
+                  DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(IF(qa.timefinish IS NULL, gg.timemodified, qa.timefinish)), @@GLOBAL.time_zone, "America/Chicago"), "%d %b %Y") AS FinalDate
                 FROM mdl_course c
                   INNER JOIN mdl_course_categories ccx ON ccx.id = c.category
                   INNER JOIN mdl_course_categories cat ON cat.id = c.category
@@ -1308,9 +1306,7 @@ class lsud1 {
                     SELECT DISTINCT(cc.id) AS "CC_ID"
                     FROM mdl_course_categories cc
                     WHERE cc.name IN ("Archived")
-                  )
-
-                GROUP BY coursenumber, sectionnumber, x_number, FinalLetterGrade';
+                  )' . $wheres . $grouper;
 
         // Actually fetch the data.
         $odl_dgps = $DB->get_records_sql($sql);
