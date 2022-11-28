@@ -242,17 +242,38 @@ class lsud1 {
         // Return the list of courses that match the course number and section number.
         $courses = self::get_course_by('250','courseCode', $coursenumber, $optionalparms, 'Short');
 
-        // Loop through the courses and find the one that matches EXACTLY.
-        foreach ($courses->courseSectionProfiles->courseSectionProfile as $course) {
+        if (is_array($courses->courseSectionProfiles->courseSectionProfile)) {
+            // Loop through the courses and find the one that matches EXACTLY.
+            foreach ($courses->courseSectionProfiles->courseSectionProfile as $course) {
 
-            // Find the exact course number match.
-            if ($course->associatedCourse->courseNumber == $coursenumber) {
+                // If we have a course to process.
+                if (isset($course->associatedCourse)) {
+                    // Find the exact course number match.
+                    if ($course->associatedCourse->courseNumber == $coursenumber) {
+                        // Set the course section object id.
+                        $csobjectid = $course->objectId;
+                    }
+                }
+            }
+        } else {
+            // Build anbd set the new object.
+            $course = new stdClass();
+            $course = $courses->courseSectionProfiles->courseSectionProfile;
 
-                // Set the course section object id.
-                $csobjectid = $course->objectId;
+            // If we have a course to process.
+            if (isset($course->associatedCourse)) {
+                // Find the exact course number match.
+                if ($course->associatedCourse->courseNumber == $coursenumber) {
+                    // Set the course section object id.
+                    $csobjectid = $course->objectId;
+                }
+            } else {
+                // Log the fact that we did not find a match.
+                mtrace("No associated course section for $coursenumber" . "__" . "$sectionnumber.");
+                // Set the object id as null so we can return it without error.
+                $csobjectid = null;
             }
         }
-
         // Return the course section object id.
         return $csobjectid;
     }

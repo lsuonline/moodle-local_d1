@@ -80,46 +80,48 @@ class d1 {
             // Get the Course Section ObjectId for the section for posting grades.
             $csobjectid = lsud1::get_cs_objectid($odlcourse->coursenumber, $odlcourse->sectionnumber);
 
-            // Contruct the courseidnumber for the course.
-            $courseidnumber = $odlcourse->coursenumber . '__' . $odlcourse->sectionnumber;
+            if (isset($csobjectid)) {
+                // Contruct the courseidnumber for the course.
+                $courseidnumber = $odlcourse->coursenumber . '__' . $odlcourse->sectionnumber;
 
-            // Log the posting for this course.
-            mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
+                // Log the posting for this course.
+                mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
 
-            // Get the PD grades for the course in question.
-            $odlgrades = lsud1::get_odl_dgps(false, $courseidnumber);
+                // Get the PD grades for the course in question.
+                $odlgrades = lsud1::get_odl_dgps(false, $courseidnumber);
 
-            // Start the counter.
-            $count = 0;
+                // Start the counter.
+                $count = 0;
 
-            // Loop through the grades to post.
-            foreach ($odlgrades as $odlgrade) {
+                // Loop through the grades to post.
+                foreach ($odlgrades as $odlgrade) {
 
-                // Increment the counter.
-                $count++;
+                    // Increment the counter.
+                    $count++;
 
-                // Set the cs objectId to the PD Grade object.
-                $odlgrade->csobjectid = $csobjectid;
+                    // Set the cs objectId to the PD Grade object.
+                    $odlgrade->csobjectid = $csobjectid;
 
-                // Log the actual posting.
-                mtrace("  $count: Posting \"$odlgrade->finallettergrade\" from ($odlgrade->finaldate) in $courseidnumber with ObjectId $odlgrade->csobjectid for student $odlgrade->x_number.");
+                    // Log the actual posting.
+                    mtrace("  $count: Posting \"$odlgrade->finallettergrade\" from ($odlgrade->finaldate) in $courseidnumber with ObjectId $odlgrade->csobjectid for student $odlgrade->x_number.");
 
-                // Post the grade.
-                $post = lsud1::post_update_grade($token, $odlgrade->x_number, $odlgrade->csobjectid, $odlgrade->finallettergrade, $odlgrade->finaldate);
+                    // Post the grade.
+                    $post = lsud1::post_update_grade($token, $odlgrade->x_number, $odlgrade->csobjectid, $odlgrade->finallettergrade, $odlgrade->finaldate);
 
-                // If we were successful or not, log it.
-                if (isset($post->createOrUpdateStudentFinalGradeResult)) {
-                    mtrace("    Posted \"$odlgrade->finallettergrade\" for $odlgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
-                } else {
-                    mtrace("    Unable to post \"$odlgrade->finallettergrade\" for $odlgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
+                    // If we were successful or not, log it.
+                    if (isset($post->createOrUpdateStudentFinalGradeResult)) {
+                        mtrace("    Posted \"$odlgrade->finallettergrade\" for $odlgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
+                    } else {
+                        mtrace("    Unable to post \"$odlgrade->finallettergrade\" for $odlgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
+                    }
+
+                    // Log that we're done with this student's posting.
+                    mtrace("  $count: Completed Posting for student $odlgrade->x_number in course $courseidnumber.");
                 }
 
-                // Log that we're done with this student's posting.
-                mtrace("  $count: Completed Posting for student $odlgrade->x_number in course $courseidnumber.");
+                // Log that we're done posting this course grades.
+                mtrace("Posted grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
             }
-
-            // Log that we're done posting this course grades.
-            mtrace("Posted grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
         }
         return true;
     }
@@ -145,46 +147,48 @@ class d1 {
             // Get the Course Section ObjectId for the section for posting grades.
             $csobjectid = lsud1::get_cs_objectid($pdcourse->coursenumber, $pdcourse->sectionnumber);
 
-            // Contruct the courseidnumber for the course.
-            $courseidnumber = $pdcourse->coursenumber . '__' . $pdcourse->sectionnumber;
+            if (isset($csobjectid)) {
+                // Contruct the courseidnumber for the course.
+                $courseidnumber = $pdcourse->coursenumber . '__' . $pdcourse->sectionnumber;
 
-            // Log the posting for this course.
-            mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
+                // Log the posting for this course.
+                mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
 
-            // Get the PD grades for the course in question.
-            $pdgrades = lsud1::get_pd_dgps(false, $courseidnumber);
+                // Get the PD grades for the course in question.
+                $pdgrades = lsud1::get_pd_dgps(false, $courseidnumber);
 
-            // Start the counter.
-            $count = 0;
+                // Start the counter.
+                $count = 0;
 
-            // Loop through the grades to post.
-            foreach ($pdgrades as $pdgrade) {
+                // Loop through the grades to post.
+                foreach ($pdgrades as $pdgrade) {
 
-                // Increment the counter.
-                $count++;
+                    // Increment the counter.
+                    $count++;
 
-                // Set the cs objectId to the PD Grade object.
-                $pdgrade->csobjectid = $csobjectid;
+                    // Set the cs objectId to the PD Grade object.
+                    $pdgrade->csobjectid = $csobjectid;
 
-                // Log the actual posting.
-                mtrace("  $count: Posting \"$pdgrade->finallettergrade\" from ($pdgrade->finaldate) in $courseidnumber with ObjectId $pdgrade->csobjectid for student $pdgrade->x_number.");
+                    // Log the actual posting.
+                    mtrace("  $count: Posting \"$pdgrade->finallettergrade\" from ($pdgrade->finaldate) in $courseidnumber with ObjectId $pdgrade->csobjectid for student $pdgrade->x_number.");
 
-                // Post the grade.
-                $post = lsud1::post_update_grade($token, $pdgrade->x_number, $pdgrade->csobjectid, $pdgrade->finallettergrade, $pdgrade->finaldate);
+                    // Post the grade.
+                    $post = lsud1::post_update_grade($token, $pdgrade->x_number, $pdgrade->csobjectid, $pdgrade->finallettergrade, $pdgrade->finaldate);
 
-                // If we were successful or not, log it.
-                if (isset($post->createOrUpdateStudentFinalGradeResult)) {
-                    mtrace("    Posted \"$pdgrade->finallettergrade\" for $pdgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
-                } else {
-                    mtrace("    Unable to post \"$pdgrade->finallettergrade\" for $pdgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
+                    // If we were successful or not, log it.
+                    if (isset($post->createOrUpdateStudentFinalGradeResult)) {
+                        mtrace("    Posted \"$pdgrade->finallettergrade\" for $pdgrade->x_number with status of \"" . $post->createOrUpdateStudentFinalGradeResult->status . "\".");
+                    } else {
+                        mtrace("    Unable to post \"$pdgrade->finallettergrade\" for $pdgrade->x_number in course $courseidnumber with status of " . $post->SRSException->message);
+                    }
+
+                    // Log that we're done with this student's posting.
+                    mtrace("  $count: Completed Posting for student $pdgrade->x_number in course $courseidnumber.");
                 }
 
-                // Log that we're done with this student's posting.
-                mtrace("  $count: Completed Posting for student $pdgrade->x_number in course $courseidnumber.");
+                // Log that we're done posting this course grades.
+                mtrace("Posted grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
             }
-
-            // Log that we're done posting this course grades.
-            mtrace("Posted grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
         }
         return true;
     }
