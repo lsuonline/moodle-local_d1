@@ -17,6 +17,23 @@
 $string['pluginname'] = "Post Grades to D1";
 $string['pluginname_desc'] = "Periodically posts grades to Destiny One.";
 
+// Settings
+$string['d1_ocategories'] = 'ODL Course Categories';
+$string['d1_ocategories_help'] = 'The DestinyOne enrollment plugin will ONLY process ODL enrollments in these categories.';
+$string['d1_pcategories'] = 'PD Course Categories';
+$string['d1_pcategories_help'] = 'The DestinyOne enrollment plugin will ONLY process PD enrollments in these categories.';
+$string['d1_username'] = 'D1 Username';
+$string['d1_username_help'] = 'Web Services username for D1';
+$string['d1_password'] = 'D1 Password';
+$string['d1_password_help'] = 'Web Services password for the above username for D1';
+$string['d1_wsurl'] = 'WebService base url';
+$string['d1_wsurl_help'] = 'The base webservice url used to connect to D1.';
+$string['odl_daysprior'] = 'ODL Days Prior';
+$string['odl_daysprior_help'] = 'Number of days prior to today you want to grab ODL grades from.';
+$string['pd_daysprior'] = 'PD Days Prior';
+$string['pd_daysprior_help'] = 'Number of days prior to today you want to grab PD grades from.';
+
+
 // Task.
 $string['post_odl_task'] = 'Post ODL Grades';
 $string['post_pd_task'] = 'Post PD Grades';

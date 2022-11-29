@@ -28,9 +28,96 @@ if ($hassiteconfig) {
 
     $ADMIN->add('localplugins', $settings);
 
+    // Grab the course categories.
+    $ccategories = $DB->get_records('course_categories', null, 'name', 'id,name');
+
+    // Loop through those roles and do stuff.
+    foreach ($ccategories as $ocategory) {
+        // Set the studentroles array for the dropdown.
+        $ocategories[$ocategory->id] = $ocategory->name;
+    }
+
+    // Loop through those roles and do stuff.
+    foreach ($ccategories as $pcategory) {
+        // Set the studentroles array for the dropdown.
+        $pcategories[$pcategory->id] = $pcategory->name;
+    }
+
     $settings->add(
         new admin_setting_heading('local_d1_header', '',
         get_string('pluginname_desc', 'local_d1'))
+    );
+
+    // D1 Webservice Username.
+    $settings->add(
+        new admin_setting_configtext(
+            'local_d1/username',
+            get_string('d1_username', 'local_d1'),
+            get_string('d1_username_help', 'local_d1'),
+            '', PARAM_TEXT
+        )
+    );
+
+    // D1 Webservice password.
+    $settings->add(
+        new admin_setting_configpasswordunmask(
+            'local_d1/password',
+            get_string('d1_password', 'local_d1'),
+            get_string('d1_password_help', 'local_d1'),
+            '', PARAM_RAW
+        )
+    );
+
+    // D1 Websevice URL.
+    $settings->add(
+        new admin_setting_configtext(
+            'local_d1/d1_wsurl',
+            get_string('d1_wsurl', 'local_d1'),
+            get_string('d1_wsurl_help', 'local_d1'),
+            'https://yourschooltestws.destinyone.moderncampus.net', PARAM_TEXT
+        )
+    );
+
+    // ODL course categories to process.
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'local_d1/ocategories',
+            get_string('d1_ocategories', 'local_d1'),
+            get_string('d1_ocategories_help', 'local_d1'),
+            null, // Default.
+            $ocategories
+        )
+    );
+
+    // PD course categories to process.
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'local_d1/pcategories',
+            get_string('d1_pcategories', 'local_d1'),
+            get_string('d1_pcategories_help', 'local_d1'),
+            null, // Default.
+            $pcategories
+        )
+    );
+
+    // Number of days to look in the past for ODL post grades.
+    $settings->add(
+        new admin_setting_configtext(
+            'local_d1/odl_daysprior',
+            get_string('odl_daysprior', 'local_d1'),
+            get_string('odl_daysprior_help', 'local_d1'),
+            '', PARAM_TEXT
+        )
+    );
+
+    // Number of days to look in the past for PD post grades.
+    $settings->add(
+        new admin_setting_configtext(
+            'local_d1/pd_daysprior',
+            get_string('pd_daysprior', 'local_d1'),
+            get_string('pd_daysprior_help', 'local_d1'),
+            '', PARAM_TEXT
+        )
     );
 
 }
