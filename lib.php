@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 defined('MOODLE_INTERNAL') or die();
+require_once($CFG->dirroot . '/local/d1/classes/d1.php');
 
 /**
  * This function extends the course navigation with the bulkenrol item
@@ -28,21 +29,36 @@ function local_d1_extend_navigation_course($navigation, $course, $context) {
     // Make sure we can reprocess enrollments.
     if (has_capability('local/d1:postgrades', $context)) {
 
+        // Is this course a PD or ODL course?
+        $coursetype = lsupgd1::pd_odl($course);
+
+        if ($coursetype === "odl" || $coursetype === "pd") {
         // Set the url for the reprocesser.
-        $url = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id));
+        $url  = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 1));
+        $url2 = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 0));
 
         // Build the navigation node.
-        $d1pgnode = navigation_node::create(get_string('pluginname', 'local_d1'), $url,
-                navigation_node::TYPE_SETTING, null, 'local_d1', new pix_icon('i/upload', ''));
+        $d1pgnode = navigation_node::create(get_string('pglink1', 'local_d1'), $url,
+                navigation_node::TYPE_SETTING, null, 'local_d1_l', new pix_icon('i/upload', get_string('pglink1', 'local_d1')));
+
+        $d1pgnode2 = navigation_node::create(get_string('pglink2', 'local_d1'), $url2,
+                navigation_node::TYPE_SETTING, null, 'local_d1_u', new pix_icon('i/upload', get_string('pglink1', 'local_d1')));
 
         // Set the users' navigation node.
         $usersnode = $navigation->get('users');
 
         // If we have an reprocess node, add it to the users' node.
-        if (isset($d1pgnode) && !empty($usersnode)) {
+        if (!empty($usersnode)) {
+            if (isset($d1pgnode)) {
+                // Actually add the node.
+                $usersnode->add_node($d1pgnode);
+            }
 
-            // Actually add the node.
-            $usersnode->add_node($d1pgnode);
+            if (isset($d1pgnode2) && is_siteadmin()) {
+                // Actually add the node.
+                $usersnode->add_node($d1pgnode2);
+            }
+        }
         }
     }
 }
@@ -69,16 +85,16 @@ class d1 {
         require_once('classes/d1.php');
 
         // Get a token.
-        $token = lsud1::get_token();
+        $token = lsupgd1::get_token();
 
         // Get the list of courses to be posted.
-        $odlcourses = lsud1::get_odl_dgps(true);
+        $odlcourses = lsupgd1::get_odl_dgps(true);
 
         // Loop through those courses.
         foreach ($odlcourses as $odlcourse) {
 
             // Get the Course Section ObjectId for the section for posting grades.
-            $csobjectid = lsud1::get_cs_objectid($odlcourse->coursenumber, $odlcourse->sectionnumber);
+            $csobjectid = lsupgd1::get_cs_objectid($odlcourse->coursenumber, $odlcourse->sectionnumber);
 
             if (isset($csobjectid)) {
                 // Contruct the courseidnumber for the course.
@@ -88,7 +104,7 @@ class d1 {
                 mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
 
                 // Get the PD grades for the course in question.
-                $odlgrades = lsud1::get_odl_dgps(false, $courseidnumber);
+                $odlgrades = lsupgd1::get_odl_dgps(false, $courseidnumber);
 
                 // Start the counter.
                 $count = 0;
@@ -106,7 +122,7 @@ class d1 {
                     mtrace("  $count: Posting \"$odlgrade->finallettergrade\" from ($odlgrade->finaldate) in $courseidnumber with ObjectId $odlgrade->csobjectid for student $odlgrade->x_number.");
 
                     // Post the grade.
-                    $post = lsud1::post_update_grade($token, $odlgrade->x_number, $odlgrade->csobjectid, $odlgrade->finallettergrade, $odlgrade->finaldate);
+                    $post = lsupgd1::post_update_grade($token, $odlgrade->x_number, $odlgrade->csobjectid, $odlgrade->finallettergrade, $odlgrade->finaldate);
 
                     // If we were successful or not, log it.
                     if (isset($post->createOrUpdateStudentFinalGradeResult)) {
@@ -136,16 +152,16 @@ class d1 {
         require_once('classes/d1.php');
 
         // Get a token.
-        $token = lsud1::get_token();
+        $token = lsupgd1::get_token();
 
         // Get the list of courses to be posted.
-        $pdcourses = lsud1::get_pd_dgps(true);
+        $pdcourses = lsupgd1::get_pd_dgps(true);
 
         // Loop through those courses.
         foreach ($pdcourses as $pdcourse) {
 
             // Get the Course Section ObjectId for the section for posting grades.
-            $csobjectid = lsud1::get_cs_objectid($pdcourse->coursenumber, $pdcourse->sectionnumber);
+            $csobjectid = lsupgd1::get_cs_objectid($pdcourse->coursenumber, $pdcourse->sectionnumber);
 
             if (isset($csobjectid)) {
                 // Contruct the courseidnumber for the course.
@@ -155,7 +171,7 @@ class d1 {
                 mtrace("\nPosting grades for " . $courseidnumber . " - Objectid: " . $csobjectid);
 
                 // Get the PD grades for the course in question.
-                $pdgrades = lsud1::get_pd_dgps(false, $courseidnumber);
+                $pdgrades = lsupgd1::get_pd_dgps(false, $courseidnumber);
 
                 // Start the counter.
                 $count = 0;
@@ -173,7 +189,7 @@ class d1 {
                     mtrace("  $count: Posting \"$pdgrade->finallettergrade\" from ($pdgrade->finaldate) in $courseidnumber with ObjectId $pdgrade->csobjectid for student $pdgrade->x_number.");
 
                     // Post the grade.
-                    $post = lsud1::post_update_grade($token, $pdgrade->x_number, $pdgrade->csobjectid, $pdgrade->finallettergrade, $pdgrade->finaldate);
+                    $post = lsupgd1::post_update_grade($token, $pdgrade->x_number, $pdgrade->csobjectid, $pdgrade->finallettergrade, $pdgrade->finaldate);
 
                     // If we were successful or not, log it.
                     if (isset($post->createOrUpdateStudentFinalGradeResult)) {
@@ -191,15 +207,6 @@ class d1 {
             }
         }
         return true;
-    }
-
-
-    /**
-     * Master function for posting from a course.
-     *
-     * @return boolean
-     */
-    public function post_course_grades() {
     }
 
     /**

@@ -18,6 +18,8 @@ $string['pluginname'] = "Post Grades to D1";
 $string['pluginname_desc'] = "Periodically posts grades to Destiny One.";
 
 // Settings
+$string['pglink1'] = "D1 post recent grades";
+$string['pglink2'] = "D1 post all grades";
 $string['d1_ocategories'] = 'ODL Course Categories';
 $string['d1_ocategories_help'] = 'The DestinyOne enrollment plugin will ONLY process ODL enrollments in these categories.';
 $string['d1_pcategories'] = 'PD Course Categories';
