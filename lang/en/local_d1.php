@@ -14,12 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['pluginname'] = "Post Grades to D1";
+$string['pluginname'] = "D1 Post Grades";
+$string['d1'] = "D1 Post Grades";
 $string['pluginname_desc'] = "Periodically posts grades to Destiny One.";
 
 // Settings
-$string['pglink1'] = "D1 post recent grades";
-$string['pglink2'] = "D1 post all grades";
+$string['pglink1'] = "Post recent grades";
+$string['pglink2'] = "Post all grades";
 $string['d1_ocategories'] = 'ODL Course Categories';
 $string['d1_ocategories_help'] = 'The DestinyOne enrollment plugin will ONLY process ODL enrollments in these categories.';
 $string['d1_pcategories'] = 'PD Course Categories';

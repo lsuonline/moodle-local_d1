@@ -41,6 +41,12 @@ $courseid = $pageparams['courseid'];
 // Set limits to a bool.
 $limits   = $pageparams['limits'] == 1 ? true : false;
 
+// Authentication.
+require_login();
+if (!$limits && !is_siteadmin()) {
+    lsupgd1::redirect_to_url($CFG->wwwroot . '/course/view.php?id=' . $courseid);
+}
+
 // Set the context.
 $context = \context_system::instance();
 

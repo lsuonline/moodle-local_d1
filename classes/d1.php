@@ -32,6 +32,19 @@ defined('MOODLE_INTERNAL') || die();
 class lsupgd1 {
 
     /**
+     * Convenience wrapper for redirecting to moodle URLs
+     *
+     * @param  string  $url
+     * @param  array   $urlparams   array of parameters for the given URL
+     * @param  int     $delay        delay, in seconds, before redirecting
+     * @return (http redirect header)
+     */
+    public function redirect_to_url($url, $urlparams = [], $delay = 2) {
+        $moodleurl = new \moodle_url($url, $urlparams);
+        redirect($moodleurl, '', $delay);
+    }
+
+    /**
      * Grabs D1 Webseervice settings.
      *
      * @return @object $s

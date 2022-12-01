@@ -33,32 +33,27 @@ function local_d1_extend_navigation_course($navigation, $course, $context) {
         $coursetype = lsupgd1::pd_odl($course);
 
         if ($coursetype === "odl" || $coursetype === "pd") {
-        // Set the url for the reprocesser.
-        $url  = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 1));
-        $url2 = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 0));
 
-        // Build the navigation node.
-        $d1pgnode = navigation_node::create(get_string('pglink1', 'local_d1'), $url,
-                navigation_node::TYPE_SETTING, null, 'local_d1_l', new pix_icon('i/upload', get_string('pglink1', 'local_d1')));
+            // Set the url for the reprocesser.
+            $url1  = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 1));
+            $url2 = new moodle_url('/local/d1/postgrades.php', array('courseid' => $course->id, 'limits' => 0));
 
-        $d1pgnode2 = navigation_node::create(get_string('pglink2', 'local_d1'), $url2,
-                navigation_node::TYPE_SETTING, null, 'local_d1_u', new pix_icon('i/upload', get_string('pglink1', 'local_d1')));
+            // Grab the user node.
+            $usersnode = $navigation->get('users');
 
-        // Set the users' navigation node.
-        $usersnode = $navigation->get('users');
+            // Build the folder.
+            $d1node = $usersnode->add(get_string('d1', 'local_d1'),
+                null, navigation_node::TYPE_CONTAINER, 'users', 'd1');
 
-        // If we have an reprocess node, add it to the users' node.
-        if (!empty($usersnode)) {
-            if (isset($d1pgnode)) {
-                // Actually add the node.
-                $usersnode->add_node($d1pgnode);
+            // Build the nodes.
+            $d1node->add(get_string('pglink1', 'local_d1'), $url1, navigation_node::TYPE_SETTING, null, 'd1pgl1', new pix_icon('i/upload', ''));
+
+            if (is_siteadmin()) {
+                $d1node->add(get_string('pglink2', 'local_d1'), $url2, navigation_node::TYPE_SETTING, null, 'd1pgl2', new pix_icon('i/upload', ''));
             }
 
-            if (isset($d1pgnode2) && is_siteadmin()) {
-                // Actually add the node.
-                $usersnode->add_node($d1pgnode2);
-            }
-        }
+            // Return the folder and nodes.
+            return $d1node;
         }
     }
 }
