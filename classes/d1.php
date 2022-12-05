@@ -114,8 +114,12 @@ class lsupgd1 {
         // Conditionally return the response.
         if ($status == 200) {
             return $response;
+        } else if ($status == 400) {
+           mtrace("Error: $status.\nError retreiving token.\nPlease check password for $c->username.");
+           die();
         } else {
-           return false;
+           mtrace("Error: $status.\nError retreiving token.\nPlease check the D1 webservice.");
+           die();
         }
     }
 
