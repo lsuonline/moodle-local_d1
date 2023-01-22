@@ -169,12 +169,67 @@ class lsupgd1 {
         return $response;
     }
 
+    public static function update_applicability($coursenumber) {
+        // Get the data needed.
+        $s = self::get_d1_settings();
+
+        $token = self::get_token();
+
+        // Set the URL for the post command to get a list of the courses matching the parms.
+        $url = $s->wsurl . '/webservice/InternalViewREST/updateCourse?_type=json';
+
+        // Set the POST body.
+        $body = '{ "updateCourseRequestDetail": {  "course": {   "associationMode": "update",   "courseNumber": "' . $coursenumber . '",   "applicability": "Public"  } }}';
+
+        // Set the POST header.
+        $header = array('Content-Type: application/json',
+                'sessionId:' . $token);
+
+        // Set up the CURL handler.
+        $curl = curl_init($url);
+
+        // Se the CURL options.
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+
+        // Grab the response.
+        $json_response = curl_exec($curl);
+
+        // Set the HTTP code for debugging.
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        // Close the CURL handler.
+        curl_close($curl);
+
+        // Decode the response.
+        $response = json_decode($json_response);
+
+        // Return the response.
+        return $response;
+    }
+
     public static function get_cs_objectid($coursenumber, $sectionnumber) {
         // Set the optional parameters to search for the section.
         $optionalparms = ', "advancedCriteria": {"sectionCode": "' . $sectionnumber . '"}';
 
         // Return the list of courses that match the course number and section number.
         $courses = self::get_course_by('250','courseCode', $coursenumber, $optionalparms, 'Short');
+
+        if (!isset($courses->courseSectionProfiles->courseSectionProfile)) {
+            mtrace("Course Section ID not found for $coursenumber - $sectionnumber. Trying to update its applicability to Public.");
+            $updated = self::update_applicability($coursenumber);
+            $updated = $updated->updateCourseResult;
+
+            if (isset($updated->responseCode) && $updated->responseCode == "Success") {
+                mtrace("Updated the aplpicability for $coursenumber to public. We will try to get the objectId for this course again in the next run.");
+            } else {
+                mtrace("We were unable to set the applicability for $coursenumber. Please check the course in D1.");
+            }
+            return null;
+        }
 
         if (is_array($courses->courseSectionProfiles->courseSectionProfile)) {
             // Loop through the courses and find the one that matches EXACTLY.
@@ -186,6 +241,9 @@ class lsupgd1 {
                     if ($course->associatedCourse->courseNumber == $coursenumber) {
                         // Set the course section object id.
                         $csobjectid = $course->objectId;
+                    } else {
+                        $csobjectid = null;
+                        continue;
                     }
                 }
             }

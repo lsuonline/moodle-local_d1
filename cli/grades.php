@@ -97,6 +97,13 @@ foreach ($grades as $grade) {
     $gradedate = date_create($grade->gradedate);
     $grade->gradedate = date_format($gradedate,"d M Y");
 
+    if ($grade->grade == "Withdrawal" || $grade->grade == "No Show") {
+        $dropper = gradeposter::drop_student($token, $grade);
+        $updated = gradeposter::update_status($grade->sid, "1", $grade->grade);
+        mtrace("Dropped student: $grade->x_number from course $grade->coursenumber - $grade->sectionnumber on date: $grade->gradedate with reason code: $grade->grade.");
+        continue;
+    }
+
     // Increment the coutner2.
     $counter2++;
 
@@ -141,15 +148,23 @@ foreach ($grades as $grade) {
         $posted = lsupgd1::post_update_grade($token, $grade->x_number, $grade->csobjectid, $grade->grade, $grade->gradedate);
 
         // If the post was successful or not, vary the rest of the data.
-        if ($posted->statusmsg == "OK") {
+        if (isset($posted->createOrUpdateStudentFinalGradeResult->status) && $posted->createOrUpdateStudentFinalGradeResult->status == "OK") {
             $poststatus = "posted to d1";
             echo("1");
             echo", $poststatus, ";
 
             // Update the grades DB that the grade was posted.
             $updated = gradeposter::update_status($grade->sid, "1", $poststatus);
+        } else if (isset($posted->SRSException->errorCode) && $posted->SRSException->errorCode == 'VLD0001') {
+             $poststatus = "posted to d1";
+            echo("1");
+            echo", $poststatus, ";
+
+            // Update the grades DB that the grade was NOT posted.
+            $updated = gradeposter::update_status($grade->sid, "1", $poststatus);
         } else {
-             $poststatus = "failed to post to d1";
+
+             $poststatus = $posted->SRSException->message;
             echo("0");
             echo", $poststatus, ";
 
@@ -284,6 +299,53 @@ class gradeposter {
         // Set the POST header.
         $header = array('Content-Type: application/json',
                 'sessionId: ' . $token);
+
+        $curl = curl_init($url);
+
+        // Set the CURL options.
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+
+        // Gett the JSON response.
+        $json_response = curl_exec($curl);
+
+        // Set the HTTP code for debugging.
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        // Close the CURL handler.
+        curl_close($curl);
+
+        // Decode the response.
+        $response = json_decode($json_response);
+
+        // Return the response.
+        return($response);
+    }
+
+
+    public static function drop_student($token, $grade) {
+        // Get the data needed.
+        $s = lsupgd1::get_d1_settings();
+
+        // Set the URL.
+        $url = $s->wsurl . '/webservice/InternalViewREST/dropStudentFromSection?_type=json';
+
+        // Set the POST body.
+        $body = '<dropStudentFromSectionRequestDetail>
+                     <attributeValue>' . $grade->x_number . '</attributeValue>
+                     <courseNumber>' . $grade->coursenumber . '</courseNumber>
+                     <dropReason>' . $grade->grade . '</dropReason>
+                     <refundMode>None</refundMode>
+                     <dropDate>' . $grade->gradedate . '</dropDate>
+                     <matchOn>studentNumber</matchOn>
+                     <sectionNumber>' . $grade->sectionnumber . '</sectionNumber>
+                 </dropStudentFromSectionRequestDetail>';
+
+        // Set the POST header.
+        $header = array(    'Content-Type: application/xml', 'sessionId: ' . $token);
 
         $curl = curl_init($url);
 
