@@ -155,8 +155,8 @@ foreach ($grades as $grade) {
 
             // Update the grades DB that the grade was posted.
             $updated = gradeposter::update_status($grade->sid, "1", $poststatus);
-        } else if (isset($posted->SRSException->errorCode) && $posted->SRSException->errorCode == 'VLD0001') {
-             $poststatus = "posted to d1";
+        } else if (isset($posted->SRSException->errorCode) && $posted->SRSException->message == '[Student already has a final grade]') {
+             $poststatus = "posted to d1 again";
             echo("1");
             echo", $poststatus, ";
 
