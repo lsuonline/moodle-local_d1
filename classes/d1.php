@@ -241,8 +241,11 @@ class lsupgd1 {
                     if ($course->associatedCourse->courseNumber == $coursenumber) {
                         // Set the course section object id.
                         $csobjectid = $course->objectId;
+                        mtrace("Found the CS Objectid: $csobjectid for $coursenumber - $sectionnumber.");
+                        break 1;
                     } else {
                         $csobjectid = null;
+                        mtrace("Did not find the CS Objectid for $coursenumber - $sectionnumber.");
                         continue;
                     }
                 }
@@ -267,7 +270,7 @@ class lsupgd1 {
             }
         }
         // Return the course section object id.
-        return $csobjectid;
+        return isset($csobjectid) ? $csobjectid : false;
     }
 
     /**

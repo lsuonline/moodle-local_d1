@@ -256,9 +256,11 @@ class gradeposter {
 
     // Check to see if we're grabbing 
     if ($cso == 'true') {
-        $cso = ' AND s.csobjectid IS NOT NULL ';
+        $cso1 = ' csobjectid,';
+        $cso2 = ' AND s.csobjectid IS NOT NULL ';
     } else {
-        $cso = ' AND s.csobjectid IS NULL 
+        $cso1 = '';
+        $cso2 = ' AND s.csobjectid IS NULL 
             GROUP BY s.coursenumber, s.sectionnumber ';
     }
 
@@ -266,13 +268,14 @@ class gradeposter {
     $sql = 'SELECT s.id AS sid,
               x_number,
               coursenumber,
-              sectionnumber,
-              csobjectid,
+              sectionnumber, '
+              . $cso1 . '
               grade,
               gradedate
             FROM mdl_scotty_grades s
             WHERE s.poststatus = 0 '
-            . $idpat . $cso . '
+            . $idpat . $cso2 . '
+#            AND reasonmodified <> "[finalGrade value mismatch with section grading sheet template grade type for transcript grade]"
             ORDER BY s.coursenumber ASC,
               s.sectionnumber ASC,
               s.x_number ASC';
