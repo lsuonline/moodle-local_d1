@@ -535,9 +535,16 @@ class lsupgd1 {
 
         // Set the counter at 0.
         $counter = 0;
+        $counter2 = 0;
 
         // Loop through the daily grade postings array.
         foreach ($postings as $posting) {
+
+            // Get a new token every 100 rows.
+            if ($counter2 % 100 == 0) {
+                $token = self::get_token();
+                mtrace("Got new token: $token.");
+            }
 
             // If we do not have a course section object id.
             if (!isset($posting->csobjectid)) {
