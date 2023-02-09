@@ -605,6 +605,7 @@ class lsupgd1 {
                   "isInstructorApproved": "Yes",
                   "isProgramApproved": "Yes",
                   "isRegistrarApproved": "Yes",
+                  "isCertificateRequirementsMet": "Yes",
                   "gradingSheet": 
                  {"courseSectionProfile":
                  {"objectId": "' . $csobjectid . '"}},"student":
