@@ -35,56 +35,17 @@ require(__DIR__ . '/../../../config.php');
 require_once("$CFG->libdir/clilib.php");
 require_once('../classes/d1.php');
 
-// Grab the CLI parms for even/odd/all processing.
-$args = ($_SERVER['argv']);
-
-// Set the pattern.
-$pattern = isset($args[1]) ? $args[1] : 'all';
-
-// Set the cso var.
-$cso = isset($args[2]) ? $args[2] : 1;
-$cso = (bool) $cso;
-
-mtrace("Posting $pattern grades to D1.");
+mtrace("Posting hybrid grades to D1.");
 
 // We need this.
 global $CFG;
 
-// Set the count of D1 being down.
-$downcounter = 0;
-
-// Build a horrific goto.
-a:
-
-// Grab the token.
 $token = lsupgd1::get_token();
 
-// If we don't get a token.
-if (is_int($token)) {
-    // Increment the count.
-    $downcounter++;
-
-    // Get error codes.
-    $codes = lsupgd1::get_codes();
-
-    // Define the error.
-    $error = "$downcounter - " . $codes[$token];
-
-    mtrace($error);
-
-    // Wait a full second before trying to get another token.
-    sleep(1);
-
-    // Bathe afterward.
-    goto a;
-
-// We got a token!
-} else {
-    mtrace("Token: $token");
-}
+mtrace("Token: $token");
 
 // Grab the grades from the DB.
-$grades = gradeposter::get_grades($pattern, $cso);
+$grades = gradeposter::get_hybrid_grades();
 
 // Set the header in case you want to use this as a CSV for some reason.
 mtrace("id, x_number, coursenumber, sectionnumber, csobjectid, grade, gradedate, poststatus, reasonmodified, elapsed time");
@@ -97,14 +58,14 @@ foreach ($grades as $grade) {
     $gradedate = date_create($grade->gradedate);
     $grade->gradedate = date_format($gradedate,"d M Y");
 
-    if ($cso) {
-        if ($grade->grade == "Withdrawal" || $grade->grade == "No Show") {
-            $dropper = gradeposter::drop_student($token, $grade);
-            $updated = gradeposter::update_status($grade->sid, "1", $grade->grade);
-            mtrace("Dropped student: $grade->x_number from course $grade->coursenumber - $grade->sectionnumber on date: $grade->gradedate with reason code: $grade->grade.");
-            continue;
-        }
+/*
+    if ($grade->grade == "Withdrawal" || $grade->grade == "No Show") {
+        $dropper = gradeposter::drop_student($token, $grade);
+        $updated = gradeposter::update_status($grade->sid, "1", $grade->grade);
+        mtrace("Dropped student: $grade->x_number from course $grade->coursenumber - $grade->sectionnumber on date: $grade->gradedate with reason code: $grade->grade.");
+        continue;
     }
+*/
 
     // Increment the coutner2.
     $counter2++;
@@ -119,7 +80,7 @@ foreach ($grades as $grade) {
     $t1 = microtime(true);
 
     // Get course section objectids for courses.
-    if (!$cso) {
+    if (is_null($grade->csobjectid)) {
         // Get the course section objectid.
         $csobjectid = lsupgd1::get_cs_objectid($grade->coursenumber, $grade->sectionnumber);
 
@@ -237,51 +198,50 @@ class gradeposter {
 
     // If this was successful, let us know.
     if ($update) {
-        mtrace("Updated scotty_grades2 csobjectid to $csobjectid for all course sections matching $grade->coursenumber - $grade->sectionnumber.");
+        mtrace("Updated scotty_grades csobjectid to $csobjectid for all course sections matching $grade->coursenumber - $grade->sectionnumber.");
     } else {
-        mtrace("* Failed to update scotty_grades2 csobjectid: $csobjectid for all course sections matching $grade->coursenumber - $grade->sectionnumber.");
+        mtrace("* Failed to update scotty_grades csobjectid: $csobjectid for all course sections matching $grade->coursenumber - $grade->sectionnumber.");
     }
     return $update;
 
   }
 
-  public static function get_grades($pattern, $cso) {
+  public static function get_hybrid_grades() {
     global $DB;
-    // Run against odd, even, or all.
-    if ($pattern == "odd") {
-        $idpat = ' AND id % 2 = 1 ';
-    } else if ($pattern == "even") {
-        $idpat = ' AND id % 2 = 0 ';
-    } else {
-        $idpat = '';
-    }
-
-    // Check to see if we're grabbing 
-    if ($cso == 'true') {
-        $cso1 = ' csobjectid,';
-        $cso2 = ' AND s.csobjectid IS NOT NULL ';
-    } else {
-        $cso1 = '';
-        $cso2 = ' AND s.csobjectid IS NULL 
-            GROUP BY s.coursenumber, s.sectionnumber ';
-    }
 
     // Build the SQL.
-    $sql = 'SELECT s.id AS sid,
-              x_number,
-              coursenumber,
-              sectionnumber, '
-              . $cso1 . '
-              grade,
-              gradedate
-            FROM mdl_scotty_grades2 s
-            WHERE s.poststatus = 0 '
-            . $idpat . $cso2 . '
-#            AND reasonmodified <> "[finalGrade value mismatch with section grading sheet template grade type for transcript grade]"
-             AND reasonmodified LIKE "%active%"
-            ORDER BY s.coursenumber ASC,
-              s.sectionnumber ASC,
-              s.x_number ASC';
+    $sql = '
+SELECT CONCAT(mf.email, "_", g.customsectionnumber, "_", mf.grade, "_", mf.gradedate) AS uniquer,
+g.id AS sid,
+g.x_number,
+mf.firstname,
+mf.lastname,
+mf.lsuid,
+mf.email,
+mf.department,
+g.csobjectid,
+g.coursenumber,
+g.sectionnumber,
+mf.version,
+g.customsectionnumber,
+mf.grade,
+mf.enrollstart,
+mf.enrollend,
+mf.gradedate
+FROM mdl_scotty_mf mf
+  INNER JOIN mdl_scotty_enr e ON e.email = mf.email
+  INNER JOIN mdl_scotty_grades2 g ON e.x_number = g.x_number AND g.coursenumber = e.coursename AND mf.grade = g.grade
+    AND e.customsectionnumber = g.customsectionnumber
+WHERE CONCAT(mf.department, " ", mf.coursenumber) = g.coursenumber
+  AND CONCAT(mf.department, " ", mf.coursenumber) = e.coursename
+  AND e.customsectionnumber LIKE CONCAT(mf.department, " ", mf.coursenumber, " ", mf.version, "%")
+  AND g.csobjectid IS NOT NULL
+  AND g.poststatus = "0"
+  AND g.reasonmodified NOT LIKE "%not enrolled%"
+#  AND g.x_number = "X052865"
+GROUP BY mf.email, g.customsectionnumber, mf.grade, mf.gradedate 
+ORDER BY mf.lastname ASC, mf.firstname ASC, mf.email ASC, mf.department ASC, mf.coursenumber ASC
+';
 
     // Get the grades where the above parms a re met.
     $grades = $DB->get_records_sql($sql);
