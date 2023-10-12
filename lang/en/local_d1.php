@@ -43,3 +43,4 @@ $string['post_pd_task'] = 'Post PD Grades';
 
 // Other stuff
 $string['postgrades'] = "Post Grades";
+$string['d1:postgrades'] = "Post Grades";

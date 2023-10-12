@@ -82,6 +82,9 @@ class d1 {
         // Get a token.
         $token = lsupgd1::get_token();
 
+        // Get the time to calculate the token age.
+        $tokentime = microtime(true);
+
         // Get the list of courses to be posted.
         $odlcourses = lsupgd1::get_odl_dgps(true);
 
@@ -106,6 +109,19 @@ class d1 {
 
                 // Loop through the grades to post.
                 foreach ($odlgrades as $odlgrade) {
+
+                    // What time is it?
+                    $nowtime = microtime(true);
+                    // See how long we've been running.
+                    $elapsedtime = $nowtime - $tokentime;
+                    // See if we need to regenerate the token.
+                    if ($elapsedtime > 300) {
+                        // Generate the token.
+                        mtrace("Regenerating token as it's $elapsedtime seconds old.");
+                        $token = lsupgd1::get_token();
+                        // Reset the time to reset the token age.
+                        $tokentime = microtime(true);
+                    }
 
                     // Increment the counter.
                     $count++;
@@ -149,6 +165,9 @@ class d1 {
         // Get a token.
         $token = lsupgd1::get_token();
 
+        // Get the time to calculate the token age.
+        $tokentime = microtime(true);
+
         // Get the list of courses to be posted.
         $pdcourses = lsupgd1::get_pd_dgps(true);
 
@@ -173,6 +192,19 @@ class d1 {
 
                 // Loop through the grades to post.
                 foreach ($pdgrades as $pdgrade) {
+
+                    // What time is it?
+                    $nowtime = microtime(true);
+                    // See how long we've been running.
+                    $elapsedtime = $nowtime - $tokentime;
+                    // See if we need to regenerate the token.
+                    if ($elapsedtime > 300) {
+                        // Generate the token.
+                        mtrace("Regenerating token as it's $elapsedtime seconds old.");
+                        $token = lsupgd1::get_token();
+                        // Reset the time to reset the token age.
+                        $tokentime = microtime(true);
+                    }
 
                     // Increment the counter.
                     $count++;
