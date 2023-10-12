@@ -346,7 +346,7 @@ class lsupgd1 {
                   INNER JOIN mdl_enrol e ON e.courseid = c.id AND e.enrol = "d1"
                   INNER JOIN mdl_user_enrolments ue ON ue.enrolid = e.id
                   INNER JOIN mdl_user u ON u.id = ue.userid
-                  INNER JOIN mdl_enrol_d1_students d1s ON d1s.username = u.username AND d1s.email = u.email
+                  INNER JOIN mdl_enrol_d1_students d1s ON d1s.userid = u.id
                   INNER JOIN mdl_enrol_d1_enrolls d1e ON d1s.id = d1e.studentsid AND d1e.courseid = c.id
                   INNER JOIN mdl_assign a ON a.course = c.id
                   INNER JOIN mdl_assign_submission sub ON sub.assignment = a.id AND sub.userid = u.id AND sub.status = "submitted" AND sub.latest = 1
@@ -385,7 +385,7 @@ class lsupgd1 {
                   INNER JOIN mdl_course_categories cat ON cat.id = c.category
                   INNER JOIN mdl_course_completions cc ON cc.course = c.id
                   INNER JOIN mdl_user u ON cc.userid = u.id
-                  INNER JOIN mdl_enrol_d1_students d1s ON d1s.username = u.username AND d1s.email = u.email
+                  INNER JOIN mdl_enrol_d1_students d1s ON d1s.userid = u.id
                   INNER JOIN mdl_enrol_d1_enrolls d1e ON d1s.id = d1e.studentsid AND d1e.courseid = c.id
                   INNER JOIN mdl_quiz q ON q.course = c.id
                   INNER JOIN mdl_grade_items gi ON gi.courseid = c.id AND gi.itemtype = "mod" AND gi.itemmodule = "quiz" AND gi.iteminstance = q.id
@@ -466,7 +466,7 @@ class lsupgd1 {
                  INNER JOIN mdl_grade_grades gg1 ON gg1.itemid = gi1.id
                  INNER JOIN mdl_grade_grades gg2 ON gg2.itemid = gi2.id
                  INNER JOIN mdl_user u ON ue.userid = u.id
-                 INNER JOIN mdl_enrol_d1_students d1s ON d1s.username = u.username AND d1s.email = u.email
+                 INNER JOIN mdl_enrol_d1_students d1s ON d1s.userid = u.id
                  INNER JOIN mdl_enrol_d1_enrolls d1e ON d1s.id = d1e.studentsid AND d1e.courseid = c.id
                  INNER JOIN mdl_course_modules cm ON cm.course = c.id AND gi1.iteminstance = cm.instance
                  INNER JOIN mdl_modules m ON m.id = cm.module AND m.name = gi1.itemmodule
